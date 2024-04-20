@@ -1,0 +1,56 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server
+    hostname: bitwarden_server
+    container_name: bitwarden_server
+    ports:
+      - 127.0.0.1:8000:80
+      - 127.0.0.1:3012:3012
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - server_data:/data:rw
+    environment:
+      DOMAIN: http://localhost:8000
+      WEBSOCKET_ENABLED: true
+      # echo -n "S3cr3t123#456*" | argon2 "$(openssl rand -base64 32)" -e -id -k 19456 -t 2 -p 1
+      ADMIN_TOKEN: $$argon2id$$v=19$$m=19456,t=2,p=1$$ZnlmM3pFb09CeUxqNjIrNWRQc2tPQjZ0bVF4am54R29SdlFsWThyZjBKcz0$$PYV32OTVUlWTspW9scQQsLMHogs1mvCpnMOyNqYIHTY
+      SIGNUPS_ALLOWED: false
+      INVITATIONS_ALLOWED: false
+      SMTP_HOST: mail
+      SMTP_FROM: server@example.com
+      SMTP_PORT: 1025
+      SMTP_SECURITY: off
+      SMTP_USERNAME: smtp
+      SMTP_PASSWORD: pass123
+    healthcheck:
+      test: /healthcheck.sh
+      timeout: 1s
+      interval: 1s
+      start_interval: 1s
+      retries: 5
+
+  # http://smtp:pass123@127.0.0.1:8025
+  mail:
+    image: mailhog/mailhog
+    container_name: mail
+    hostname: mail
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./mailhog/auth:/auth:ro
+    environment:
+      MH_HOSTNAME: mail.example.com
+      MH_AUTH_FILE: /auth
+    healthcheck:
+      test: wget --spider --tries 1 http://smtp:pass123@localhost:8025
+      interval: 1s
+      timeout: 1s
+      start_interval: 1s
+      retries: 5
+
+volumes:
+  server_data:
