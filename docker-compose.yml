@@ -27,7 +27,7 @@ services:
       test: /healthcheck.sh
       timeout: 1s
       interval: 1s
-      start_interval: 1s
+      start_period: 1s
       retries: 5
 
   # http://smtp:pass123@127.0.0.1:8025
@@ -49,7 +49,7 @@ services:
       test: wget --spider --tries 1 http://smtp:pass123@localhost:8025
       interval: 1s
       timeout: 1s
-      start_interval: 1s
+      start_period: 1s
       retries: 5
 
 volumes:
